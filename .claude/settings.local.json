@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(curl -s http://localhost:3001)",
+      "Bash(curl -s http://localhost:3002)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(ls -la C:QuizItNowcomponentsquiz*.tsx)",
+      "Bash(ls \"C:\\\\QuizItNow\\\\components\\\\quiz\"\"*.tsx | grep -E \"Settings)",
+      "Bash(QuizTaker \")",
+      "Bash(netstat -tuln)",
+      "Bash(curl -s http://localhost:60572)",
+      "Bash(curl -s http://localhost:60572/quiz/results)",
+      "Bash(dir \"C:\\\\QuizItNow\\\\app\\\\quiz\\\\results\\\\\")",
+      "Bash(apt-get update:*)",
+      "Bash(apt-get install:*)",
+      "Bash(tar -czf quizitnow-build.tar.gz .next/ public/ package.json package-lock.json ecosystem.config.js nginx.conf .env.production --exclude=node_modules --exclude=.next/cache)",
+      "Bash(rm -f quizitnow-build.tar.gz)",
+      "Bash(tar --exclude='node_modules' --exclude='.next/cache' --exclude='.claude' --exclude='*.log' -czf quizitnow-build.tar.gz .next app components lib supabase package.json package-lock.json ecosystem.config.js nginx.conf .env.production tsconfig.json tailwind.config.ts postcss.config.js next.config.js DEPLOYMENT_GUIDE.md)"
+    ]
+  }
+}
