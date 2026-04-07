@@ -8,16 +8,21 @@ export async function extractTextFromPDF(file: File): Promise<string> {
     console.log('[PDF] Extracting text from:', file.name);
 
     // Dynamically import pdfjs-dist
-    const pdfjsLib = await import('pdfjs-dist');
+    const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist');
 
     // Set up worker for browser environment
     if (typeof window !== 'undefined') {
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+      try {
+        // Try to set worker from jsdelivr CDN (more reliable)
+        GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.js`;
+      } catch (e) {
+        console.warn('[PDF] Worker configuration warning:', e);
+      }
     }
 
     // Convert file to array buffer
     const arrayBuffer = await file.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    const pdf = await getDocument({ data: arrayBuffer }).promise;
 
     let fullText = '';
 
