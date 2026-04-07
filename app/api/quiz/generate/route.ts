@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateQuizWithGemini, validateQuizStructure } from '@/lib/gemini';
+import { generateQuizWithHuggingFace, validateApiKey } from '@/lib/huggingface';
 
 /**
  * POST /api/quiz/generate
- * Generate a quiz from a topic using Gemini API
+ * Generate a quiz from a topic using HuggingFace Inference API
  */
 export async function POST(request: NextRequest) {
   try {
@@ -67,8 +67,8 @@ export async function POST(request: NextRequest) {
       titleForQuiz.substring(0, 50)
     );
 
-    // Generate quiz using Gemini
-    const result = await generateQuizWithGemini(topic.trim());
+    // Generate quiz using HuggingFace
+    const result = await generateQuizWithHuggingFace({ topic: topic.trim() });
 
     if (!result.success) {
       return NextResponse.json(
