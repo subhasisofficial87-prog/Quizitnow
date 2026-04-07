@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateQuizWithHuggingFace, validateApiKey } from '@/lib/huggingface';
+import { generateQuizWithGroq, validateApiKey } from '@/lib/groq';
 
 /**
  * POST /api/quiz/generate
@@ -67,8 +67,8 @@ export async function POST(request: NextRequest) {
       titleForQuiz.substring(0, 50)
     );
 
-    // Generate quiz using HuggingFace
-    const result = await generateQuizWithHuggingFace({ topic: topic.trim() });
+    // Generate quiz using Groq
+    const result = await generateQuizWithGroq({ topic: topic.trim() });
 
     if (!result.success) {
       return NextResponse.json(
