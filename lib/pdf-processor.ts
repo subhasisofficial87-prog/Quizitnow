@@ -1,6 +1,7 @@
 /**
  * PDF Text Extraction
  * Extracts text from PDF files using pdfjs-dist
+ * Uses local worker files served from public folder
  */
 
 export async function extractTextFromPDF(file: File): Promise<string> {
@@ -10,11 +11,13 @@ export async function extractTextFromPDF(file: File): Promise<string> {
     // Dynamically import pdfjs-dist
     const { getDocument, GlobalWorkerOptions } = await import('pdfjs-dist');
 
-    // Set up worker for browser environment
+    // Set up worker for browser environment using local files
     if (typeof window !== 'undefined') {
       try {
-        // Try to set worker from jsdelivr CDN (more reliable)
-        GlobalWorkerOptions.workerSrc = `https://cdn.jsdelivr.net/npm/pdfjs-dist@4.10.38/build/pdf.worker.min.js`;
+        // Use local worker file from public folder
+        // This avoids CDN issues on Vercel
+        GlobalWorkerOptions.workerSrc = '/pdf-worker/pdf.worker.min.mjs';
+        console.log('[PDF] Worker configured from local path');
       } catch (e) {
         console.warn('[PDF] Worker configuration warning:', e);
       }
