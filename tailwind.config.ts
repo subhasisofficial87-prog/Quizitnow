@@ -1,4 +1,4 @@
-import type { Config } from 'tailwindcss';
+import type { Config } from 'tailwindcss'
 
 const config: Config = {
   content: [
@@ -11,18 +11,8 @@ const config: Config = {
         'sky-blue': '#0EA5E9',
         'baby-pink': '#F9A8D4',
       },
-      animation: {
-        'fade-in': 'fadeIn 0.3s ease-in',
-      },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-      },
     },
   },
   plugins: [],
-};
-
-export default config;
+}
+export default config
