@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateLocalQuiz } from '@/lib/local-quiz-generator';
+import { generateQuizFromContent } from '@/lib/content-based-generator';
 
 /**
  * POST /api/generate
  * Generate a quiz from topic, PDF text, or image text
+ *
+ * For PDF/Image: Uses content-based generation (creates questions from actual extracted text)
+ * For Topic: Uses local template-based generation
  */
 export async function POST(request: NextRequest) {
   try {
@@ -55,20 +59,30 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (input.length > 10000) {
+    if (input.length > 50000) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Input is too long (maximum 10000 characters)',
+          error: 'Input is too long (maximum 50000 characters)',
         },
         { status: 400 }
       );
     }
 
-    console.log('[API] POST /api/generate - Source:', source, '- Content:', input.substring(0, 50));
+    console.log('[API] POST /api/generate - Source:', source, '- Characters:', input.length);
 
-    // Generate quiz using local generator
-    const result = await generateLocalQuiz(input.trim(), source);
+    let result;
+
+    // Use different generators based on source
+    if (source === 'pdf' || source === 'image') {
+      // For PDF/Image: use content-based generation (creates questions from actual extracted text)
+      console.log('[API] Using content-based generator for', source);
+      result = await generateQuizFromContent(input.trim());
+    } else {
+      // For topic: use local template-based generation
+      console.log('[API] Using template-based generator for topic');
+      result = await generateLocalQuiz(input.trim(), source);
+    }
 
     if (!result.success) {
       return NextResponse.json(
@@ -83,7 +97,9 @@ export async function POST(request: NextRequest) {
     // Determine title based on source
     let title = input.substring(0, 50);
     if (source === 'pdf' || source === 'image') {
-      title = `${source.toUpperCase()} Content`;
+      // Extract first meaningful phrase from content
+      const lines = input.split('\n').filter((line) => line.trim().length > 10);
+      title = lines[0] ? lines[0].substring(0, 60) : `${source.toUpperCase()} Content`;
     }
 
     // Return quiz data
@@ -95,6 +111,7 @@ export async function POST(request: NextRequest) {
           title,
           sourceType: source,
           createdAt: new Date().toISOString(),
+          extractedText: source !== 'topic' ? input.substring(0, 500) : undefined, // Store preview of extracted text
           questions: result.questions,
           stats: result.stats,
         },
@@ -123,7 +140,12 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(
     {
       status: 'ready',
-      message: 'Quiz generation endpoint is ready. Use POST to generate quizzes from topic, PDF, or image.',
+      message: 'Quiz generation endpoint is ready. Supports topic-based and content-based (PDF/Image) quiz generation.',
+      generators: {
+        topic: 'Template-based generation with topic keywords',
+        pdf: 'Content-based generation from extracted PDF text',
+        image: 'Content-based generation from extracted image text (OCR)',
+      },
     },
     { status: 200 }
   );
