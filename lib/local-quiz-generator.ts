@@ -187,20 +187,121 @@ function getTypeDistribution(
 }
 
 /**
- * Generate MCQ question
+ * Generate MCQ question with realistic options
  */
 function generateMCQQuestion(topic: string, difficulty: Difficulty, id: string): MCQQuestion {
-  const difficultyModifier = difficulty === 'easy' ? 'basic' : difficulty === 'medium' ? 'intermediate' : 'advanced';
-  const questionNumber = Math.floor(Math.random() * 3) + 1;
+  // Question templates based on topic
+  const questionTemplates = [
+    `What is the primary definition of ${topic}?`,
+    `Which of the following best describes ${topic}?`,
+    `What is a key characteristic of ${topic}?`,
+    `Which statement about ${topic} is correct?`,
+    `What role does ${topic} play in modern contexts?`,
+    `Which of the following is an example of ${topic}?`,
+    `What are the main benefits of understanding ${topic}?`,
+    `How does ${topic} relate to other concepts?`,
+    `Which approach is most commonly used in ${topic}?`,
+    `What is the significance of ${topic} in today's world?`,
+  ];
+
+  // Realistic option sets based on difficulty
+  const optionSets = {
+    easy: [
+      {
+        correct: `A well-established principle in ${topic}`,
+        wrong: [
+          `A common misconception about ${topic}`,
+          `A rarely used method in ${topic}`,
+          `An outdated understanding of ${topic}`,
+        ],
+      },
+      {
+        correct: `The primary purpose of ${topic}`,
+        wrong: [
+          `A secondary effect of ${topic}`,
+          `An unrelated concept`,
+          `A partial definition of ${topic}`,
+        ],
+      },
+      {
+        correct: `A fundamental aspect of ${topic}`,
+        wrong: [
+          `A temporary feature in ${topic}`,
+          `A regional variation of ${topic}`,
+          `A future development in ${topic}`,
+        ],
+      },
+    ],
+    medium: [
+      {
+        correct: `The most scientifically supported explanation of ${topic}`,
+        wrong: [
+          `An alternative but less supported theory about ${topic}`,
+          `A historical but now obsolete interpretation of ${topic}`,
+          `A theoretical possibility not proven in ${topic}`,
+        ],
+      },
+      {
+        correct: `The optimal method for implementing ${topic}`,
+        wrong: [
+          `A valid but less efficient approach to ${topic}`,
+          `A hybrid method combining multiple aspects of ${topic}`,
+          `A traditional approach that has evolved in ${topic}`,
+        ],
+      },
+      {
+        correct: `The most significant contributing factor to ${topic}`,
+        wrong: [
+          `A secondary contributing factor to ${topic}`,
+          `A correlated but not causal element of ${topic}`,
+          `An outcome rather than a cause in ${topic}`,
+        ],
+      },
+    ],
+    hard: [
+      {
+        correct: `The nuanced distinction between ${topic} and related concepts`,
+        wrong: [
+          `A superficial similarity between ${topic} and other phenomena`,
+          `A commonly confused but distinct aspect of ${topic}`,
+          `An advanced but ultimately flawed interpretation of ${topic}`,
+        ],
+      },
+      {
+        correct: `The advanced application of ${topic} principles`,
+        wrong: [
+          `A specialized but narrow application of ${topic}`,
+          `A theoretical extrapolation beyond ${topic}`,
+          `An interdisciplinary misinterpretation of ${topic}`,
+        ],
+      },
+      {
+        correct: `The underlying mechanism explaining ${topic}`,
+        wrong: [
+          `A surface-level observation about ${topic}`,
+          `An emergent property not directly related to ${topic}`,
+          `A statistical artifact in the study of ${topic}`,
+        ],
+      },
+    ],
+  };
+
+  // Select random question and options
+  const question = questionTemplates[Math.floor(Math.random() * questionTemplates.length)];
+  const optionSet = optionSets[difficulty][Math.floor(Math.random() * optionSets[difficulty].length)];
+
+  // Create options array with correct answer shuffled
+  const allOptions = [optionSet.correct, ...optionSet.wrong];
+  const shuffled = allOptions.sort(() => Math.random() - 0.5);
 
   return {
     id,
     type: 'mcq',
     difficulty,
-    content: `What is an important ${difficultyModifier} concept related to ${topic}? (Question ${questionNumber})`,
-    options: ['Option A', 'Option B', 'Option C', 'Option D'],
-    correctAnswer: 'Option B',
-    explanation: `This is the correct answer for this ${difficulty} level MCQ about ${topic}.`,
+    content: question,
+    options: shuffled,
+    correctAnswer: optionSet.correct,
+    explanation: `${optionSet.correct} is the correct answer because it accurately represents a key concept in ${topic} at the ${difficulty} level.`,
   };
 }
 
@@ -208,13 +309,38 @@ function generateMCQQuestion(topic: string, difficulty: Difficulty, id: string):
  * Generate Fill-blank question
  */
 function generateFillBlankQuestion(topic: string, difficulty: Difficulty, id: string): FillBlankQuestion {
+  const templates = [
+    {
+      content: `The primary concept in ${topic} is called ______`,
+      answer: difficulty === 'easy' ? 'definition' : difficulty === 'medium' ? 'principle' : 'paradigm',
+      explanation: `This term is fundamental to understanding ${topic}.`
+    },
+    {
+      content: `In ${topic}, the process of ______ is essential for success`,
+      answer: difficulty === 'easy' ? 'learning' : difficulty === 'medium' ? 'implementation' : 'optimization',
+      explanation: `This process is critical in ${topic}.`
+    },
+    {
+      content: `The term ______ describes a key characteristic of ${topic}`,
+      answer: difficulty === 'easy' ? 'structure' : difficulty === 'medium' ? 'mechanism' : 'interaction',
+      explanation: `This terminology is important for ${topic}.`
+    },
+    {
+      content: `When studying ${topic}, the concept of ______ should be prioritized`,
+      answer: difficulty === 'easy' ? 'foundation' : difficulty === 'medium' ? 'context' : 'correlation',
+      explanation: `Understanding this concept is vital in ${topic}.`
+    },
+  ];
+
+  const template = templates[Math.floor(Math.random() * templates.length)];
+
   return {
     id,
     type: 'fillBlank',
     difficulty,
-    content: `The key principle in ${topic} is ______.`,
-    correctAnswer: 'defined concept',
-    explanation: `The answer relates to the fundamental concept of ${topic}.`,
+    content: template.content,
+    correctAnswer: template.answer,
+    explanation: template.explanation,
   };
 }
 
@@ -222,13 +348,38 @@ function generateFillBlankQuestion(topic: string, difficulty: Difficulty, id: st
  * Generate One-word question
  */
 function generateOneWordQuestion(topic: string, difficulty: Difficulty, id: string): OneWordQuestion {
+  const templates = [
+    {
+      content: `What is the most important term associated with ${topic}?`,
+      answer: difficulty === 'easy' ? 'understanding' : difficulty === 'medium' ? 'application' : 'integration',
+      explanation: `This term encapsulates the essence of ${topic}.`
+    },
+    {
+      content: `Name the primary process in ${topic}:`,
+      answer: difficulty === 'easy' ? 'learning' : difficulty === 'medium' ? 'development' : 'evolution',
+      explanation: `This is the core process that drives ${topic}.`
+    },
+    {
+      content: `What single word best describes ${topic}?`,
+      answer: difficulty === 'easy' ? 'important' : difficulty === 'medium' ? 'essential' : 'fundamental',
+      explanation: `This word captures the nature of ${topic}.`
+    },
+    {
+      content: `Identify one key characteristic of ${topic}:`,
+      answer: difficulty === 'easy' ? 'complexity' : difficulty === 'medium' ? 'variability' : 'interdependence',
+      explanation: `This characteristic is essential to ${topic}.`
+    },
+  ];
+
+  const template = templates[Math.floor(Math.random() * templates.length)];
+
   return {
     id,
     type: 'oneWord',
     difficulty,
-    content: `Name one major aspect of ${topic}.`,
-    correctAnswer: 'concept',
-    explanation: `One important aspect of ${topic} is this concept.`,
+    content: template.content,
+    correctAnswer: template.answer,
+    explanation: template.explanation,
   };
 }
 
@@ -236,16 +387,57 @@ function generateOneWordQuestion(topic: string, difficulty: Difficulty, id: stri
  * Generate True/False question
  */
 function generateTrueFalseQuestion(topic: string, difficulty: Difficulty, id: string): TrueFalseQuestion {
+  const statements = {
+    true: [
+      {
+        content: `${topic} plays a significant role in modern understanding and practice.`,
+        explanation: `This is true. ${topic} is widely recognized as important in contemporary contexts.`
+      },
+      {
+        content: `Multiple approaches exist for studying and applying ${topic}.`,
+        explanation: `This is true. ${topic} has diverse methodologies and applications.`
+      },
+      {
+        content: `Understanding ${topic} requires knowledge of fundamental principles.`,
+        explanation: `This is true. ${topic} is built upon core theoretical foundations.`
+      },
+      {
+        content: `${topic} has evolved and developed over time.`,
+        explanation: `This is true. ${topic} has a history of development and refinement.`
+      },
+    ],
+    false: [
+      {
+        content: `${topic} is a simple, one-dimensional concept with no complexity.`,
+        explanation: `This is false. ${topic} is actually multifaceted and complex.`
+      },
+      {
+        content: `There is only one correct way to understand ${topic}.`,
+        explanation: `This is false. ${topic} has multiple valid interpretations and approaches.`
+      },
+      {
+        content: `${topic} is no longer relevant in today's world.`,
+        explanation: `This is false. ${topic} remains highly relevant and applicable.`
+      },
+      {
+        content: `You can fully understand ${topic} without studying its foundational concepts.`,
+        explanation: `This is false. ${topic} requires understanding of fundamental principles.`
+      },
+    ],
+  };
+
   const isTrue = Math.random() > 0.5;
+  const statement = isTrue
+    ? statements.true[Math.floor(Math.random() * statements.true.length)]
+    : statements.false[Math.floor(Math.random() * statements.false.length)];
+
   return {
     id,
     type: 'trueFalse',
     difficulty,
-    content: isTrue
-      ? `${topic} is an important field of study.`
-      : `${topic} is a simple concept with no complexity.`,
+    content: statement.content,
     correctAnswer: isTrue ? 'true' : 'false',
-    explanation: `This statement about ${topic} is ${isTrue ? 'correct' : 'incorrect'}.`,
+    explanation: statement.explanation,
   };
 }
 
@@ -253,18 +445,68 @@ function generateTrueFalseQuestion(topic: string, difficulty: Difficulty, id: st
  * Generate Match question
  */
 function generateMatchQuestion(topic: string, difficulty: Difficulty, id: string): MatchQuestion {
+  const pairSets = {
+    easy: [
+      {
+        pairs: [
+          { left: `Basic principle of ${topic}`, right: 'Foundation for understanding' },
+          { left: `Key aspect of ${topic}`, right: 'Essential component' },
+          { left: `Application of ${topic}`, right: 'Practical use' },
+        ]
+      },
+      {
+        pairs: [
+          { left: `Definition in ${topic}`, right: 'Clear explanation' },
+          { left: `Method in ${topic}`, right: 'Common approach' },
+          { left: `Goal of ${topic}`, right: 'Desired outcome' },
+        ]
+      },
+    ],
+    medium: [
+      {
+        pairs: [
+          { left: `Theoretical framework in ${topic}`, right: 'Academic foundation' },
+          { left: `Empirical evidence for ${topic}`, right: 'Scientific support' },
+          { left: `Practical implementation of ${topic}`, right: 'Real-world application' },
+        ]
+      },
+      {
+        pairs: [
+          { left: `Primary mechanism of ${topic}`, right: 'How it works' },
+          { left: `Secondary effect in ${topic}`, right: 'Resulting consequence' },
+          { left: `Contributing factor to ${topic}`, right: 'Influencing element' },
+        ]
+      },
+    ],
+    hard: [
+      {
+        pairs: [
+          { left: `Foundational premise of ${topic}`, right: 'Underlying assumption' },
+          { left: `Complex relationship in ${topic}`, right: 'Interconnected elements' },
+          { left: `Advanced concept in ${topic}`, right: 'Higher-level understanding' },
+        ]
+      },
+      {
+        pairs: [
+          { left: `Synthesized understanding of ${topic}`, right: 'Integrated knowledge' },
+          { left: `Interdisciplinary connection to ${topic}`, right: 'Cross-domain application' },
+          { left: `Critical evaluation of ${topic}`, right: 'Analytical perspective' },
+        ]
+      },
+    ],
+  };
+
+  const pairSet = pairSets[difficulty][Math.floor(Math.random() * pairSets[difficulty].length)];
+  const pairsString = pairSet.pairs.map((p, i) => `(${i + 1}) ${p.left} → ${p.right}`).join('; ');
+
   return {
     id,
     type: 'match',
     difficulty,
-    content: `Match the concepts related to ${topic}:`,
-    pairs: [
-      { left: 'Concept 1', right: 'Definition 1' },
-      { left: 'Concept 2', right: 'Definition 2' },
-      { left: 'Concept 3', right: 'Definition 3' },
-    ],
-    correctAnswer: 'Concept 1-Definition 1, Concept 2-Definition 2, Concept 3-Definition 3',
-    explanation: `These are the correct pairings for the concepts in ${topic}.`,
+    content: `Match the related concepts and their descriptions in ${topic}:`,
+    pairs: pairSet.pairs,
+    correctAnswer: pairsString,
+    explanation: `These are the correct matches for the concepts in ${topic}. Each left item corresponds to the description on the right.`,
   };
 }
 
@@ -276,14 +518,53 @@ function generateAssertionReasonQuestion(
   difficulty: Difficulty,
   id: string
 ): AssertionReasonQuestion {
+  const scenarios = {
+    both: [
+      {
+        assertion: `${topic} is essential for modern understanding and practice.`,
+        reason: `Because it provides a foundational framework that underpins contemporary approaches.`,
+        explanation: `Both the assertion and reason are accurate. ${topic} is indeed fundamental, and its importance derives from its role as a foundational framework.`
+      },
+      {
+        assertion: `Multiple methodologies exist for studying ${topic}.`,
+        reason: `Because ${topic} is complex and multifaceted, requiring diverse analytical approaches.`,
+        explanation: `Both statements are true. The complexity of ${topic} necessitates various methodological approaches.`
+      },
+    ],
+    assertionOnly: [
+      {
+        assertion: `${topic} requires significant study and understanding.`,
+        reason: `Because there is only one way to comprehend ${topic}.`,
+        explanation: `The assertion is true, but the reason is false. While ${topic} does require serious study, it's not because there's only one way to understand it.`
+      },
+    ],
+    reasonOnly: [
+      {
+        assertion: `${topic} is irrelevant in contemporary contexts.`,
+        reason: `Because ${topic} has evolved and developed over time to remain applicable.`,
+        explanation: `The assertion is false, but the reason is true. While ${topic} has indeed evolved, this makes it MORE relevant, not less.`
+      },
+    ],
+    neither: [
+      {
+        assertion: `${topic} is a simple concept requiring minimal effort to understand.`,
+        reason: `Because ${topic} has no foundational principles or theoretical basis.`,
+        explanation: `Neither statement is correct. ${topic} is complex and has a substantial theoretical foundation.`
+      },
+    ],
+  };
+
+  const type = ['both', 'assertionOnly', 'reasonOnly', 'neither'][Math.floor(Math.random() * 4)];
+  const scenario = scenarios[type as keyof typeof scenarios][0];
+
   return {
     id,
     type: 'assertionReason',
     difficulty,
-    content: `Assertion and Reason about ${topic}:`,
-    assertion: `Statement about ${topic} is true.`,
-    reason: `Because of the underlying principles of ${topic}.`,
-    correctAnswer: 'Both',
-    explanation: `Both the assertion and reason are correct for this ${difficulty} level question about ${topic}.`,
+    content: `Read the assertion and reason below:`,
+    assertion: scenario.assertion,
+    reason: scenario.reason,
+    correctAnswer: type === 'both' ? 'Both' : type === 'assertionOnly' ? 'A' : type === 'reasonOnly' ? 'R' : 'Neither',
+    explanation: scenario.explanation,
   };
 }
