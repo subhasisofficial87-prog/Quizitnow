@@ -55,6 +55,21 @@ function analyzeContent(text: string): ContentAnalysis {
 }
 
 /**
+ * Extract key phrase from sentence (first 10-15 words max)
+ */
+function extractKeyPhrase(text: string, maxLength: number = 60): string {
+  const words = text.split(/\s+/).slice(0, 10);
+  let phrase = words.join(' ');
+  if (phrase.length > maxLength) {
+    phrase = phrase.substring(0, maxLength).trim();
+    if (phrase.endsWith(',') || phrase.endsWith(';')) {
+      phrase = phrase.slice(0, -1).trim();
+    }
+  }
+  return phrase;
+}
+
+/**
  * Generate MCQ question from content
  */
 function generateContentMCQ(analysis: ContentAnalysis, difficulty: Difficulty, id: string): any {
@@ -65,34 +80,31 @@ function generateContentMCQ(analysis: ContentAnalysis, difficulty: Difficulty, i
   // Select a sentence as the basis
   const sentenceIdx = Math.floor(Math.random() * Math.min(analysis.sentences.length, 10));
   const sentence = analysis.sentences[sentenceIdx];
+  const keyPhrase = extractKeyPhrase(sentence, 50);
 
-  // Extract key phrase from sentence
-  const words = sentence.split(/\s+/);
   const keyPhrases = analysis.keyTerms.slice(0, 5);
 
   if (keyPhrases.length < 2) {
     return null;
   }
 
-  // Create question from sentence
+  // Create short, concise question
   const selectedPhrase = keyPhrases[0];
-  const question = `Based on the text, what is the main point about ${selectedPhrase}?`;
+  const question = `What does the text say about ${selectedPhrase}?`;
 
-  // Create options from content
-  const correctOption = sentence
-    .substring(0, Math.min(100, sentence.length))
-    .replace(/^[^:]*:\s*/, '');
+  // Create concise options (max 60 chars)
+  const correctOption = extractKeyPhrase(sentence, 60);
 
-  // Generate wrong options from other concepts
+  // Generate wrong options - keep them SHORT
   const wrongOptions = [
-    analysis.concepts[Math.floor(Math.random() * analysis.concepts.length)]
-      ?.substring(0, 80)
-      .trim() || 'An unrelated concept',
-    analysis.sentences[Math.floor(Math.random() * analysis.sentences.length)]
-      ?.substring(0, 80)
-      .trim() || 'A different statement',
-    `A misconception about ${selectedPhrase}`,
-  ].filter((opt) => opt && opt.length > 5);
+    extractKeyPhrase(analysis.concepts[Math.floor(Math.random() * analysis.concepts.length)] || '', 60) ||
+      'An unrelated concept',
+    extractKeyPhrase(analysis.sentences[Math.floor(Math.random() * analysis.sentences.length)] || '', 60) ||
+      'A different concept',
+    `The opposite of ${selectedPhrase}`,
+  ]
+    .filter((opt) => opt && opt.length > 10 && opt !== correctOption)
+    .slice(0, 3);
 
   const allOptions = [correctOption, ...wrongOptions].slice(0, 4);
   const shuffledOptions = allOptions.sort(() => Math.random() - 0.5);
@@ -104,7 +116,7 @@ function generateContentMCQ(analysis: ContentAnalysis, difficulty: Difficulty, i
     content: question,
     options: shuffledOptions,
     correctAnswer: correctOption,
-    explanation: `This answer is directly supported by the extracted content. ${selectedPhrase} is discussed as: ${correctOption.substring(0, 150)}...`,
+    explanation: `Based on the text: ${correctOption}`,
   };
 }
 
@@ -120,28 +132,28 @@ function generateContentFillBlank(analysis: ContentAnalysis, difficulty: Difficu
   if (analysis.definitions.size > 0) {
     const defArray = Array.from(analysis.definitions.entries());
     const [term, definition] = defArray[Math.floor(Math.random() * defArray.length)];
+    const shortDef = definition.substring(0, 50).replace(/\.+$/, '');
 
     return {
       id,
       type: 'fillBlank',
       difficulty,
-      content: `According to the text, "${definition.substring(0, 80)}..." refers to ______.`,
+      content: `The text states: "${shortDef}" refers to ______.`,
       correctAnswer: term,
-      explanation: `The term "${term}" is explicitly defined in the content as: ${definition.substring(0, 150)}`,
+      explanation: `The answer is "${term}"`,
     };
   }
 
   // Otherwise use key terms
   const keyTerm = analysis.keyTerms[Math.floor(Math.random() * analysis.keyTerms.length)];
-  const relatedSentence = analysis.sentences.find((s) => s.includes(keyTerm)) || analysis.sentences[0];
 
   return {
     id,
     type: 'fillBlank',
     difficulty,
-    content: `The text describes a concept known as ______, which is discussed as: ${relatedSentence.substring(0, 100)}...`,
+    content: `In the text, the key term ______ is mentioned.`,
     correctAnswer: keyTerm,
-    explanation: `"${keyTerm}" is a key concept mentioned in the extracted content.`,
+    explanation: `The answer is "${keyTerm}"`,
   };
 }
 
@@ -153,9 +165,9 @@ function generateContentTrueFalse(analysis: ContentAnalysis, difficulty: Difficu
     return null;
   }
 
-  const isTrue = Math.random() > 0.4;
-  const sentence = analysis.sentences[Math.floor(Math.random() * analysis.sentences.length)];
-  const keyTerm = analysis.keyTerms[0] || 'this concept';
+  const isTrue = Math.random() > 0.5;
+  const sentence = extractKeyPhrase(analysis.sentences[Math.floor(Math.random() * analysis.sentences.length)], 80);
+  const keyTerm = analysis.keyTerms[0] || 'the concept';
 
   if (isTrue) {
     // True statement from actual content
@@ -163,20 +175,20 @@ function generateContentTrueFalse(analysis: ContentAnalysis, difficulty: Difficu
       id,
       type: 'trueFalse',
       difficulty,
-      content: `According to the text: "${sentence.substring(0, 120)}..."`,
+      content: `According to the text: ${sentence}`,
       correctAnswer: 'true',
-      explanation: `This statement is directly supported by the extracted content.`,
+      explanation: `This is correct`,
     };
   } else {
-    // False statement (opposite or contradiction)
-    const contradictory = `The text states that ${keyTerm} is NOT as simple as commonly understood.`;
+    // False statement
+    const contradictory = `The text says ${keyTerm} is simple and straightforward.`;
     return {
       id,
       type: 'trueFalse',
       difficulty,
-      content: `${contradictory}`,
+      content: contradictory,
       correctAnswer: 'false',
-      explanation: `This contradicts the information provided in the extracted content.`,
+      explanation: `This is incorrect`,
     };
   }
 }
@@ -190,15 +202,14 @@ function generateContentOneWord(analysis: ContentAnalysis, difficulty: Difficult
   }
 
   const keyTerm = analysis.keyTerms[Math.floor(Math.random() * analysis.keyTerms.length)];
-  const relevantSentence = analysis.sentences.find((s) => s.includes(keyTerm)) || analysis.sentences[0];
 
   return {
     id,
     type: 'oneWord',
     difficulty,
-    content: `What is the key term mentioned in this passage about "${relevantSentence.substring(0, 60)}..."?`,
+    content: `Name one key term from the text.`,
     correctAnswer: keyTerm,
-    explanation: `"${keyTerm}" is a significant term highlighted in the extracted content.`,
+    explanation: `One key term is "${keyTerm}"`,
   };
 }
 
@@ -214,7 +225,7 @@ function generateContentMatch(analysis: ContentAnalysis, difficulty: Difficulty,
 
   const pairs = defArray.map(([term, def]) => ({
     left: term,
-    right: def.substring(0, 50) + (def.length > 50 ? '...' : ''),
+    right: extractKeyPhrase(def, 40),
   }));
 
   const pairsString = pairs.map((p, i) => `${i + 1}. ${p.left} → ${p.right}`).join('; ');
@@ -223,10 +234,10 @@ function generateContentMatch(analysis: ContentAnalysis, difficulty: Difficulty,
     id,
     type: 'match',
     difficulty,
-    content: `Match the terms with their definitions from the text:`,
+    content: `Match terms with their descriptions:`,
     pairs,
     correctAnswer: pairsString,
-    explanation: `These are the correct matches based on the definitions provided in the extracted content.`,
+    explanation: `Correct matches from the text`,
   };
 }
 
@@ -238,18 +249,18 @@ function generateContentAssertionReason(analysis: ContentAnalysis, difficulty: D
     return null;
   }
 
-  const concept1 = analysis.concepts[0];
-  const concept2 = analysis.concepts[1];
+  const concept1 = extractKeyPhrase(analysis.concepts[0], 50);
+  const concept2 = extractKeyPhrase(analysis.concepts[1], 50);
 
   const scenarios = [
     {
-      assertion: `${concept1.substring(0, 80)}`,
-      reason: `Because ${concept2.substring(0, 80)}`,
+      assertion: concept1,
+      reason: `Because of the principles discussed in the text`,
       answer: 'Both',
     },
     {
-      assertion: `The text states that "${concept1.substring(0, 60)}"`,
-      reason: `However, this statement is contradicted elsewhere`,
+      assertion: concept1,
+      reason: `This is contradicted later in the text`,
       answer: 'A',
     },
   ];
@@ -260,11 +271,11 @@ function generateContentAssertionReason(analysis: ContentAnalysis, difficulty: D
     id,
     type: 'assertionReason',
     difficulty,
-    content: `Read the following based on the extracted text:`,
+    content: `Is this correct?`,
     assertion: scenario.assertion,
     reason: scenario.reason,
     correctAnswer: scenario.answer,
-    explanation: `This is supported by the content analysis: ${scenario.assertion.substring(0, 100)}`,
+    explanation: `The answer is ${scenario.answer}`,
   };
 }
 
