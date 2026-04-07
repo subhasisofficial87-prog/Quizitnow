@@ -4,7 +4,7 @@
  * Uses Mistral-7B-Instruct model for quiz generation
  */
 
-const HUGGINGFACE_API_URL = 'https://router.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1';
+const HUGGINGFACE_API_URL = 'https://api-inference.huggingface.co/models/google/flan-t5-large';
 const HUGGINGFACE_API_KEY = process.env.NEXT_PUBLIC_HUGGINGFACE_API_KEY || '';
 
 /**
@@ -106,11 +106,12 @@ ${SYSTEM_PROMPT}`;
       body: JSON.stringify({
         inputs: userPrompt,
         parameters: {
-          max_new_tokens: 4000,
+          max_length: 2048,
           temperature: 0.7,
-          top_p: 0.95,
-          return_full_text: false,
         },
+        options: {
+          wait_for_model: true,
+        }
       }),
     });
 
