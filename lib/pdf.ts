@@ -6,7 +6,8 @@ export const extractTextFromPDF = async (file: File): Promise<string> => {
     // Set up worker if in browser
     if (typeof window !== 'undefined' && 'GlobalWorkerOptions' in pdfjsLib) {
       try {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+        // Use local worker file from public directory (works better on Vercel)
+        pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf-worker/pdf.worker.min.mjs';
       } catch (error) {
         console.warn('Failed to set PDF worker source:', error);
       }
