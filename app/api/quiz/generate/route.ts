@@ -80,12 +80,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate quiz structure
-    const validation = validateQuizStructure(result.data);
-    if (!validation.valid) {
-      console.warn('[API] Validation warnings:', validation.errors);
-    }
-
     // Return quiz data
     return NextResponse.json(
       {
@@ -95,7 +89,8 @@ export async function POST(request: NextRequest) {
           title: titleForQuiz,
           sourceType: sourceType,
           createdAt: new Date().toISOString(),
-          ...result.data,
+          questions: result.questions,
+          stats: result.stats,
         },
       },
       { status: 200 }

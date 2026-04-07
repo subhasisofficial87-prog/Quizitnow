@@ -58,12 +58,13 @@ interface GenerateQuizParams {
 
 interface QuizResponse {
   success: boolean;
-  questions: {
+  error?: string;
+  questions?: {
     easy: any[];
     medium: any[];
     hard: any[];
   };
-  stats: {
+  stats?: {
     totalQuestions: number;
     byType: Record<string, number>;
   };
