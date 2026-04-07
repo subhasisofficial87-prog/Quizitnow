@@ -1,7 +1,7 @@
 /**
  * Groq API Integration
  * Handles all communication with Groq's free inference API
- * Uses mixtral-8x7b-32768 model for quiz generation
+ * Uses llama-3.1-70b-versatile model for quiz generation
  */
 
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
@@ -104,7 +104,7 @@ ${SYSTEM_PROMPT}`;
       },
       method: 'POST',
       body: JSON.stringify({
-        model: 'mixtral-8x7b-32768',
+        model: 'llama-3.1-70b-versatile',
         messages: [
           {
             role: 'system',
