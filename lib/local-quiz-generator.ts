@@ -66,9 +66,17 @@ const sampleQuizzesData: Record<string, any> = {
  * 10 MCQ + 5 Fill-blank + 4 One-word + 4 True/False + 4 Match + 4 Assertion-Reason
  * Difficulty: 10 Easy, 10 Medium, 11 Hard
  */
-export async function generateLocalQuiz(topic: string): Promise<Quiz> {
+export async function generateLocalQuiz(input: string, sourceType: string = 'topic'): Promise<Quiz> {
   try {
-    console.log('[LocalQuizGenerator] Generating quiz for topic:', topic);
+    // Extract topic from input
+    let topic = input;
+
+    if (sourceType === 'pdf' || sourceType === 'image') {
+      // Use first 100 chars as topic
+      topic = input.substring(0, 100) || 'General Knowledge';
+    }
+
+    console.log('[LocalQuizGenerator] Generating quiz for', sourceType + ':', topic.substring(0, 50));
 
     // Initialize questions object
     const questions: Record<Difficulty, AnyQuestion[]> = {

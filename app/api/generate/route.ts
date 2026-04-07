@@ -3,49 +3,72 @@ import { generateLocalQuiz } from '@/lib/local-quiz-generator';
 
 /**
  * POST /api/generate
- * Generate a quiz from a topic using local quiz generator
+ * Generate a quiz from topic, PDF text, or image text
  */
 export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const body = await request.json();
-    const { topic } = body;
+    const { topic, pdfText, imageText, sourceType = 'topic' } = body;
 
-    // Validate topic
-    if (!topic || !topic.trim()) {
+    // Determine source and input
+    let input = '';
+    let source = sourceType;
+
+    if (pdfText) {
+      input = pdfText;
+      source = 'pdf';
+    } else if (imageText) {
+      input = imageText;
+      source = 'image';
+    } else if (topic) {
+      input = topic;
+      source = 'topic';
+    } else {
       return NextResponse.json(
         {
           success: false,
-          error: 'Topic is required',
+          error: 'Topic, PDF text, or image text is required',
         },
         { status: 400 }
       );
     }
 
-    if (topic.trim().length < 3) {
+    // Validate input
+    if (!input || !input.trim()) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Topic must be at least 3 characters',
+          error: 'Input content cannot be empty',
         },
         { status: 400 }
       );
     }
 
-    if (topic.length > 5000) {
+    if (input.trim().length < 3) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Topic is too long (maximum 5000 characters)',
+          error: 'Input must be at least 3 characters',
         },
         { status: 400 }
       );
     }
 
-    console.log('[API] POST /api/generate - Topic:', topic.substring(0, 50));
+    if (input.length > 10000) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Input is too long (maximum 10000 characters)',
+        },
+        { status: 400 }
+      );
+    }
+
+    console.log('[API] POST /api/generate - Source:', source, '- Content:', input.substring(0, 50));
 
     // Generate quiz using local generator
-    const result = await generateLocalQuiz(topic.trim());
+    const result = await generateLocalQuiz(input.trim(), source);
 
     if (!result.success) {
       return NextResponse.json(
@@ -57,14 +80,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Determine title based on source
+    let title = input.substring(0, 50);
+    if (source === 'pdf' || source === 'image') {
+      title = `${source.toUpperCase()} Content`;
+    }
+
     // Return quiz data
     return NextResponse.json(
       {
         success: true,
         quiz: {
           id: `quiz-${Date.now()}`,
-          title: topic.substring(0, 50),
-          sourceType: 'topic',
+          title,
+          sourceType: source,
           createdAt: new Date().toISOString(),
           questions: result.questions,
           stats: result.stats,
@@ -94,7 +123,7 @@ export async function GET(request: NextRequest) {
   return NextResponse.json(
     {
       status: 'ready',
-      message: 'Quiz generation endpoint is ready. Use POST to generate quizzes.',
+      message: 'Quiz generation endpoint is ready. Use POST to generate quizzes from topic, PDF, or image.',
     },
     { status: 200 }
   );
