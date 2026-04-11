@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">QuizItNow</string>
+    <string name="title_activity_main">QuizItNow</string>
+    <string name="package_name">com.quizitnow.app</string>
+    <string name="custom_url_scheme">com.quizitnow.app</string>
+</resources>

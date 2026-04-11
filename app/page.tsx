@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { extractTextFromPDF, validatePDFFile } from '@/lib/pdf-processor';
 import { extractTextFromImage, validateImageFile } from '@/lib/ocr-processor';
+import { generateQuiz } from '@/lib/quiz-generator-client';
 
 /**
  * Quiz Display Component - Shows questions with reveal answer functionality
@@ -250,20 +251,19 @@ export default function Home() {
     setLoading(true);
 
     try {
-      const response = await fetch('/api/generate', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ topic, sourceType: inputMethod }),
-      });
+      const body =
+        inputMethod === 'pdf'
+          ? { pdfText: topic, sourceType: 'pdf' as const }
+          : inputMethod === 'image'
+            ? { imageText: topic, sourceType: 'image' as const }
+            : { topic, sourceType: 'topic' as const };
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate quiz');
+      const data = await generateQuiz(body);
+
+      if (!data.success || !data.quiz) {
+        throw new Error(data.error || 'Failed to generate quiz');
       }
 
-      const data = await response.json();
       setQuiz(data.quiz);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

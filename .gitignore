@@ -33,3 +33,14 @@ yarn-error.log*
 # Misc
 .cache/
 .vercel/
+
+# Capacitor / Android
+android/app/build/
+android/build/
+android/.gradle/
+android/local.properties
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+android/capacitor.settings.gradle
+android/app/capacitor.build.gradle
