@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense, useState, useEffect } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-export default function QuizModePage() {
+function QuizModePageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const quizData = searchParams?.get('quiz');
@@ -295,5 +295,19 @@ export default function QuizModePage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function QuizModePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-blue/10 to-baby-pink/10">
+          <p className="text-gray-600">Loading quiz...</p>
+        </div>
+      }
+    >
+      <QuizModePageInner />
+    </Suspense>
   );
 }
